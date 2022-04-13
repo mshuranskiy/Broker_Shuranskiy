@@ -11,7 +11,7 @@ namespace Broker_Shuranskiy.Models
         public string Second_Name { get; set; }
         public string User_Name { get; set; }
         public string Password { get; set; }
-        public float Balance { get; set; } = 20000;
+        public float Balance { get; set; } = 50000;
         public HashSet<Bags> Bag { get; set; }
       
         public _Role Role { get; set; }
