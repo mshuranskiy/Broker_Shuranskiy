@@ -3,7 +3,6 @@ using System.Collections.Generic;
 
 namespace Broker_Shuranskiy.Models
 {  
-    public enum _Role {admin, user} 
     public class Users
     {
         public long Id { get; set; }
@@ -14,6 +13,6 @@ namespace Broker_Shuranskiy.Models
         public float Balance { get; set; } = 50000;
         public HashSet<Bags> Bag { get; set; }
       
-        public _Role Role { get; set; }
+        public string Role { get; set; }
     }
 }
