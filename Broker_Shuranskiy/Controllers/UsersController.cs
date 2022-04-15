@@ -47,7 +47,6 @@ namespace Broker_Shuranskiy.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize(Roles = "admin")]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(long id, Users users)
         {
@@ -79,7 +78,6 @@ namespace Broker_Shuranskiy.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Users>> PostUsers(Users users)
         {
