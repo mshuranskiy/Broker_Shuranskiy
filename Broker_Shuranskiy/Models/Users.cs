@@ -12,7 +12,7 @@ namespace Broker_Shuranskiy.Models
         public string Password { get; set; }
         public float Balance { get; set; } = 50000;
         public HashSet<Bags> Bag { get; set; }
-      
-        public string Role { get; set; }
+
+        public string Role { get; set; } = "guest";
     }
 }

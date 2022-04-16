@@ -81,9 +81,25 @@ namespace Broker_Shuranskiy.Controllers
 
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize(Roles = "admin")]
         [HttpPost]
         public async Task<ActionResult<Users>> PostUsers(Users users)
         {
+            _context.Users.Add(users);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction("GetUsers", new { id = users.Id }, users);
+        }
+
+        
+        [HttpPost]
+        public async Task<ActionResult<Users>> RegisterUsers(string First_Name, string Second_Name,string User_Name, string Password)
+        {
+            Users users = new Users();
+            users.First_Name = First_Name;
+            users.Second_Name = Second_Name;    
+            users.User_Name = User_Name;
+            users.Password = Password;
             _context.Users.Add(users);
             await _context.SaveChangesAsync();
 
