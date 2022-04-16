@@ -47,10 +47,13 @@ namespace Broker_Shuranskiy.Controllers
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(long id, Users users)
         {
-            if (id != users.Id)
+            int _UserID = GetUserID(User.Identity.Name);
+
+            if (id != users.Id || _UserID != id) 
             {
                 return BadRequest();
             }
@@ -108,5 +111,15 @@ namespace Broker_Shuranskiy.Controllers
         {
             return _context.Users.Any(e => e.Id == id);
         }
+
+
+        private int GetUserID(string name)
+        {
+            IQueryable<int> query = (IQueryable<int>)(from Users in _context.Users where Users.User_Name == name select Users.Id);
+            int id = query.FirstOrDefault();
+            return id;
+        }
     }
+
+    
 }
