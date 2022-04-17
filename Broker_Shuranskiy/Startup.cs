@@ -73,6 +73,8 @@ namespace Broker_Shuranskiy
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

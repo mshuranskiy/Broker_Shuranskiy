@@ -12,8 +12,8 @@ using Broker_Shuranskiy.Data;
 
 namespace Broker_Shuranskiy.Controllers
 {
+    [Route("api/[controller]")]
     [ApiController]
-    [Route("[controller]")]
     public class AccountController : ControllerBase
     {
         private readonly DataContext context;
@@ -21,7 +21,7 @@ namespace Broker_Shuranskiy.Controllers
         {
             this.context = context;
         }
-        [HttpPost("/token")]
+        [HttpPost("token")]
         public IActionResult Token(string username, string password)
         {
             var identity = GetIdentity(username, password);

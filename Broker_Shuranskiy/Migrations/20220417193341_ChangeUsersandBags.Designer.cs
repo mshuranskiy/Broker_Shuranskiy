@@ -3,14 +3,16 @@ using Broker_Shuranskiy.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Broker_Shuranskiy.Migrations
 {
     [DbContext(typeof(DataContext))]
-    partial class DataContextModelSnapshot : ModelSnapshot
+    [Migration("20220417193341_ChangeUsersandBags")]
+    partial class ChangeUsersandBags
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,11 +27,11 @@ namespace Broker_Shuranskiy.Migrations
                         .HasColumnType("bigint")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<long>("Id_Stock")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id_Stock")
+                        .HasColumnType("int");
 
-                    b.Property<long>("Id_User")
-                        .HasColumnType("bigint");
+                    b.Property<int>("Id_User")
+                        .HasColumnType("int");
 
                     b.Property<int>("Stock_Count")
                         .HasColumnType("int");

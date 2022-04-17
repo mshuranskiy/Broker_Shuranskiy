@@ -51,7 +51,7 @@ namespace Broker_Shuranskiy.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> PutUsers(long id, Users users)
         {
-            int _UserID = GetUserID(User.Identity.Name);
+            long _UserID = GetUserID(User.Identity.Name);
 
             if (id != users.Id || _UserID != id) 
             {
@@ -92,8 +92,8 @@ namespace Broker_Shuranskiy.Controllers
         }
 
         
-        [HttpPost]
-        public async Task<ActionResult<Users>> RegisterUsers(string First_Name, string Second_Name,string User_Name, string Password)
+        [HttpPost("register")]
+        public async Task<ActionResult<Users>> Register(string First_Name, string Second_Name,string User_Name, string Password)
         {
             Users users = new Users();
             users.First_Name = First_Name;
@@ -128,13 +128,13 @@ namespace Broker_Shuranskiy.Controllers
             return _context.Users.Any(e => e.Id == id);
         }
 
-
-        private int GetUserID(string name)
+        private long GetUserID(string name)
         {
-            IQueryable<int> query = (IQueryable<int>)(from Users in _context.Users where Users.User_Name == name select Users.Id);
-            int id = query.FirstOrDefault();
+            IQueryable<long> query = (from Users in _context.Users where Users.User_Name == name select Users.Id);
+            long id = query.FirstOrDefault();
             return id;
         }
+
     }
 
     
