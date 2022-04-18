@@ -20,7 +20,7 @@ namespace Broker_Shuranskiy.Controllers
             _context = context;
         }
 
-        [HttpPost("register")]
+        [Route("register")]
         public async Task<ActionResult<Users>> Register(string First_Name, string Second_Name, string User_Name, string Password)
         {
             Users users = new Users();
@@ -31,11 +31,11 @@ namespace Broker_Shuranskiy.Controllers
             _context.Users.Add(users);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUsers", new { id = users.Id }, users);
+            return users;
         }
 
         [Authorize]
-        [HttpPost("BuyStock")]
+        [Route("BuyStock")]
         public async Task<ActionResult<Bags>> BuyStock(int id_stock, int stock_count)
         {
             Users _curUser = Get_User(User.Identity.Name);
@@ -88,6 +88,62 @@ namespace Broker_Shuranskiy.Controllers
                 return bags;
             }
         }
+
+        [Authorize]
+        [Route("SellStock")]
+        public async Task<ActionResult<Bags>> SellStock(int id_stock, int stock_count)
+        {
+            Users _curUser = Get_User(User.Identity.Name);
+            Stocks _curStock = Get_Stock(id_stock);
+            Bags bags = new Bags();
+            bags.Id_User = _curUser.Id;
+            bags.Stock_Count = stock_count;
+            bags.Id_Stock = id_stock;
+
+            if (stock_count < _curStock.Min_Lot)
+                return Ok($"Минимальный лот для покупки {_curStock.Min_Lot}");
+
+            _curUser.Balance += _curStock.Price * stock_count;
+            int _count = CountBagsId(_curUser.Id, id_stock);
+            if (_count == 0)
+            {
+                return Ok("У вас нет данной акции");
+            }
+            else
+            {
+                Bags _curBag = Get_Bags(_curUser.Id, id_stock);
+                if (_curBag.Stock_Count < stock_count)
+                    return Ok("Недостаточно акций для продажи");
+                _curBag.Stock_Count -= stock_count;
+                if(_curBag.Stock_Count == 0)
+                {
+                    _context.Bags.Remove(_curBag);
+                    await _context.SaveChangesAsync();
+                    return Ok("Все акции успешно проданы");
+                }
+
+                _context.Entry(_curBag).State = EntityState.Modified;
+                _context.Entry(_curUser).State = EntityState.Modified;
+
+                try
+                {
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!BagsExists(_curBag.Id))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
+                bags = await _context.Bags.FindAsync(_curBag.Id);
+                return bags;
+            }
+        }
         private bool BagsExists(long id)
         {
             return _context.Bags.Any(e => e.Id == id);
@@ -116,14 +172,6 @@ namespace Broker_Shuranskiy.Controllers
             Stocks _stock = query.FirstOrDefault();
             return _stock;
         }
-
-        private long GetUserID(string name)
-        {
-            IQueryable<long> query = (from Users in _context.Users where Users.User_Name == name select Users.Id);
-            long id = query.FirstOrDefault();
-            return id;
-        }
-
 
     }
 }
