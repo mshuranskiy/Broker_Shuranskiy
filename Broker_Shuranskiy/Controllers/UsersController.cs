@@ -91,20 +91,6 @@ namespace Broker_Shuranskiy.Controllers
             return CreatedAtAction("GetUsers", new { id = users.Id }, users);
         }
 
-        
-        [HttpPost("register")]
-        public async Task<ActionResult<Users>> Register(string First_Name, string Second_Name,string User_Name, string Password)
-        {
-            Users users = new Users();
-            users.First_Name = First_Name;
-            users.Second_Name = Second_Name;    
-            users.User_Name = User_Name;
-            users.Password = Password;
-            _context.Users.Add(users);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetUsers", new { id = users.Id }, users);
-        }
 
         // DELETE: api/Users/5
         [Authorize(Roles = "admin")]
