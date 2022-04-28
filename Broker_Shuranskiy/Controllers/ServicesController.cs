@@ -20,14 +20,22 @@ namespace Broker_Shuranskiy.Controllers
             _context = context;
         }
 
-        [Route("register")]
-        public async Task<ActionResult<Users>> Register(string First_Name, string Second_Name, string User_Name, string Password)
+        public struct BuySellData
         {
-            Users users = new Users();
-            users.First_Name = First_Name;
-            users.Second_Name = Second_Name;
-            users.User_Name = User_Name;
-            users.Password = Password;
+            public int id_stock { get; set; }
+            public int stock_count { get; set; }
+        }
+
+        [Route("register")]
+        public async Task<ActionResult<Users>> Register([FromBody]UsersDTO userDTO)
+        {
+            Users users = new Users
+            {
+                First_Name = userDTO.First_Name,
+                Second_Name = userDTO.Second_Name,
+                User_Name = userDTO.User_Name,
+                Password = userDTO.Password
+            };
             _context.Users.Add(users);
             await _context.SaveChangesAsync();
 
@@ -36,142 +44,24 @@ namespace Broker_Shuranskiy.Controllers
 
         [Authorize]
         [Route("BuyStock")]
-        public async Task<ActionResult<Bags>> BuyStock(int id_stock, int stock_count)
+        public async Task<ActionResult<Bags>> BuyStock([FromBody] BuySellData _data)
         {
-            Users _curUser = Get_User(User.Identity.Name);
-            Stocks _curStock = Get_Stock(id_stock);
-            Bags bags = new Bags();
-            bags.Id_User = _curUser.Id;
-            bags.Stock_Count = stock_count;
-            bags.Id_Stock = id_stock;
-
-            if (stock_count < _curStock.Min_Lot)
-                return Ok($"Минимальный лот для покупки {_curStock.Min_Lot}");
-
-            if (_curUser.Balance < _curStock.Price * stock_count)
-                return Ok("Недостаточно средств");
-
-            _curUser.Balance -= _curStock.Price * stock_count;
-            int _count = CountBagsId(_curUser.Id, id_stock);
-            if (_count == 0)
-            {
-                _context.Bags.Add(bags);
-                await _context.SaveChangesAsync();
-                _context.Entry(_curUser).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
-                return CreatedAtAction("GetBags", new { id = bags.Id }, bags);
-            }
-            else
-            {
-                Bags _curBag = Get_Bags(_curUser.Id, id_stock);
-                _curBag.Stock_Count += stock_count;
-
-                _context.Entry(_curBag).State = EntityState.Modified;
-                _context.Entry(_curUser).State = EntityState.Modified;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BagsExists(_curBag.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                bags = await _context.Bags.FindAsync(_curBag.Id);
-                return bags;
-            }
+            Users _curUser = Services.Get_User(User.Identity.Name,_context);
+            Stocks _curStock = Services.Get_Stock(_data.id_stock, _context);
+            
+            return Ok(await Services.Serv_BuyStock(_curUser, _curStock, _context, _data.id_stock, _data.stock_count));
         }
 
         [Authorize]
         [Route("SellStock")]
-        public async Task<ActionResult<Bags>> SellStock(int id_stock, int stock_count)
+        public async Task<ActionResult<Bags>> SellStock([FromBody] BuySellData _data)
         {
-            Users _curUser = Get_User(User.Identity.Name);
-            Stocks _curStock = Get_Stock(id_stock);
-            Bags bags = new Bags();
-            bags.Id_User = _curUser.Id;
-            bags.Stock_Count = stock_count;
-            bags.Id_Stock = id_stock;
+            Users _curUser = Services.Get_User(User.Identity.Name, _context);
+            Stocks _curStock = Services.Get_Stock(_data.id_stock, _context);
 
-            if (stock_count < _curStock.Min_Lot)
-                return Ok($"Минимальный лот для покупки {_curStock.Min_Lot}");
-
-            _curUser.Balance += _curStock.Price * stock_count;
-            int _count = CountBagsId(_curUser.Id, id_stock);
-            if (_count == 0)
-            {
-                return Ok("У вас нет данной акции");
-            }
-            else
-            {
-                Bags _curBag = Get_Bags(_curUser.Id, id_stock);
-                if (_curBag.Stock_Count < stock_count)
-                    return Ok("Недостаточно акций для продажи");
-                _curBag.Stock_Count -= stock_count;
-                if(_curBag.Stock_Count == 0)
-                {
-                    _context.Bags.Remove(_curBag);
-                    await _context.SaveChangesAsync();
-                    return Ok("Все акции успешно проданы");
-                }
-
-                _context.Entry(_curBag).State = EntityState.Modified;
-                _context.Entry(_curUser).State = EntityState.Modified;
-
-                try
-                {
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!BagsExists(_curBag.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                bags = await _context.Bags.FindAsync(_curBag.Id);
-                return bags;
-            }
-        }
-        private bool BagsExists(long id)
-        {
-            return _context.Bags.Any(e => e.Id == id);
+            return Ok(await Services.Serv_SellStock(_curUser, _curStock, _context, _data.id_stock, _data.stock_count));
         }
 
-        private Bags Get_Bags(long user_id, long stock_id)
-        {
-            IQueryable<Bags> query = (from Bags in _context.Bags where Bags.Id_User == user_id && Bags.Id_Stock == stock_id select Bags);
-            Bags bag = query.FirstOrDefault();
-            return bag;
-        }
-        private int CountBagsId(long user_id, long stock_id)
-        {
-            int _count = (from Bags in _context.Bags where Bags.Id_User == user_id && Bags.Id_Stock == stock_id select Bags.Id).Count();
-            return _count;
-        }
-        private Users Get_User(string name)
-        {
-            IQueryable<Users> query = (from Users in _context.Users where Users.User_Name == name select Users);
-            Users _user = query.FirstOrDefault();
-            return _user;
-        }
-        private Stocks Get_Stock(long stock_id)
-        {
-            IQueryable<Stocks> query = (from Stocks in _context.Stocks where Stocks.Id == stock_id select Stocks);
-            Stocks _stock = query.FirstOrDefault();
-            return _stock;
-        }
 
     }
 }

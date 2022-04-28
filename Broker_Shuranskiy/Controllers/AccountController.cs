@@ -21,10 +21,16 @@ namespace Broker_Shuranskiy.Controllers
         {
             this.context = context;
         }
-        [HttpPost("token")]
-        public IActionResult Token(string username, string password)
+        public struct LoginData
         {
-            var identity = GetIdentity(username, password);
+            public string login { get; set; }
+            public string password { get; set; }
+        }
+
+        [HttpPost("token")]
+        public IActionResult Token([FromBody] LoginData Id)
+        {
+            var identity = GetIdentity(Id.login, Id.password);
             if (identity == null)
             {
                 return BadRequest(new { errorText = "Invalid username or password." });
