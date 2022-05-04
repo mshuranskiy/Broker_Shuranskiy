@@ -29,13 +29,8 @@ namespace Broker_Shuranskiy.Controllers
         [Route("register")]
         public async Task<ActionResult<Users>> Register([FromBody]UsersDTO userDTO)
         {
-            Users users = new Users
-            {
-                First_Name = userDTO.First_Name,
-                Second_Name = userDTO.Second_Name,
-                User_Name = userDTO.User_Name,
-                Password = userDTO.Password
-            };
+            Users users = new Users();
+            users = (Users)userDTO;
             _context.Users.Add(users);
             await _context.SaveChangesAsync();
 

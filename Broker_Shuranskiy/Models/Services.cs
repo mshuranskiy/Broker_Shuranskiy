@@ -1,4 +1,5 @@
 ﻿using Broker_Shuranskiy.Data;
+using Broker_Shuranskiy.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Broker_Shuranskiy.Models
                 return ("Недостаточно средств");
 
             _curUser.Balance -= _curStock.Price * stock_count;
-            int _count = CountBagsId(_curUser.Id, id_stock,_context);
+            int _count = CountBagsId(_curUser.Id, id_stock, _context);
             if (_count == 0)
             {
                 _context.Bags.Add(bags);
@@ -34,14 +35,14 @@ namespace Broker_Shuranskiy.Models
             }
             else
             {
-                Bags _curBag = Get_Bags(_curUser.Id, id_stock,_context);
+                Bags _curBag = Get_Bags(_curUser.Id, id_stock, _context);
                 _curBag.Stock_Count += stock_count;
 
                 _context.Entry(_curBag).State = EntityState.Modified;
                 _context.Entry(_curUser).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
-               
+
                 bags = await _context.Bags.FindAsync(_curBag.Id);
                 return bags;
             }
@@ -82,7 +83,7 @@ namespace Broker_Shuranskiy.Models
                 _context.Entry(_curUser).State = EntityState.Modified;
 
                 await _context.SaveChangesAsync();
-                
+
                 bags = await _context.Bags.FindAsync(_curBag.Id);
                 return bags;
             }
